@@ -23,6 +23,7 @@ from utils.nasdaq import Nasdaq
 from utils.date import yearMonthDay
 from middleware.auth import auth
 from operator import itemgetter
+from GoogleNews import GoogleNews
 
 
 finance = Blueprint("finance", __name__)
@@ -173,11 +174,24 @@ def ticker(symbol):
         return jsonify(None)
 
 
-@finance.route("/test", methods=["GET"])
+@finance.route("/news/<symbol>", methods=["GET"])
 @auth
-def test():
+def news(symbol):
     try:
-
-        return jsonify(None)
+        googlenews = GoogleNews(lang='en', region="US",
+                                period="1d", encode="utf-8")
+        googlenews.get_news(symbol)
+        data = googlenews.result()
+        result = []
+        for news in data:
+            obj = {
+                "date": news["date"] if news["date"] is not None else "",
+                "link": news["link"] if news["link"] is not None else "",
+                "img": news["img"] if news["img"] is not None else "",
+                "title": news["title"] if news["title"] is not None else "",
+            }
+            result.append(obj)
+        print(result, file=sys.stderr)
+        return jsonify(result)
     except Exception as e:
         print(e)
