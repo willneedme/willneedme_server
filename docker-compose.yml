@@ -1,0 +1,137 @@
+version: "3"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      # - mariadb
+      - node
+      - flask
+      - admin
+      # - node_socket
+      - fast_socket
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: admin
+    restart: "on-failure"
+    # ports:
+    #   - 3000:3000
+    # expose:
+    #   - 3000
+    volumes:
+      - "./admin:/usr/src/app"
+      - "/usr/src/app/node_modules"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+
+  flask:
+    restart: always
+    container_name: "flask"
+    image: "flask"
+    build:
+      context: "./flask"
+      dockerfile: Dockerfile
+    volumes:
+      - "./flask:/usr/src/flask"
+      - "/tmp/mysqld:/run/mysqld"
+    environment:
+      FLASK_DEBUG: 1
+    depends_on:
+      - mariadb
+    env_file:
+      - ./dev.env
+  fast_socket:
+    restart: always
+    container_name: "fast_socket"
+    image: "fast_socket"
+    build:
+      context: "./fast_socket"
+      dockerfile: Dockerfile
+    volumes:
+      - "./fast_socket:/usr/src/fast_socket"
+      - "/tmp/mysqld:/run/mysqld"
+    environment:
+      FLASK_DEBUG: 1
+    depends_on:
+      - mariadb
+    env_file:
+      - ./dev.env
+    # expose:
+    #   - 5002
+    # ports:
+    #   - "5001:5001"
+  node:
+    restart: always
+    container_name: "node"
+    # image: "node"
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    volumes:
+      - "./node:/usr/src/node"
+      - "/usr/src/node/node_modules"
+      - "/tmp/mysqld:/run/mysqld"
+    depends_on:
+      - mariadb
+    env_file:
+      - ./dev.env
+  # node_socket:
+  #   restart: always
+  #   container_name: "node_socket"
+  #   # image: "node"
+  #   build:
+  #     context: ./node_socket
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - "./node_socket:/usr/src/node_socket"
+  #     - "/usr/src/node_socket/node_modules"
+  #     - "/tmp/mysqld:/run/mysqld"
+  #   depends_on:
+  #     - mariadb
+  #   env_file:
+  #     - ./dev.env
+
+  mariadb:
+    # context: ./mariadb
+    container_name: "mariadb"
+    logging:
+      driver: none
+    image: mariadb:10
+    # expose:
+    #   - 3306
+    ports:
+      - 3306:3306
+    volumes:
+      - "./mariadb/conf.d:/etc/mysql/conf.d"
+      - "/tmp/mysqld:/run/mysqld"
+      - "./mariadb/data:/var/lib/mysql"
+      - "./mariadb/initdb.d:/docker-entrypoint-initdb.d/:ro"
+    env_file: dev.env
+    environment:
+      TZ: Asia/Seoul
+    restart: always
+    # networks:
+    #   - backend
+  # mysql:
+  #   image: "mysql:5.7"
+  #   restart: always
+  #   container_name: "mysql"
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - ./mysql/conf.d:/etc/mysql/conf.d
+  #     # When using cloud service => underline comments
+  #     - ./mysql/data:/var/lib//mysql #when using stack data in server
+  #     - ./mysql/initdb.d:/docker-entrypoint-initdb.d #when using stack data in server
+  #   env_file: dev.env
+  #   environment:
+  #     TZ: Asia/Seoul

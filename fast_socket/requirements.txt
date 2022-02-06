@@ -1,0 +1,24 @@
+# Flask==1.0.2
+# Flask-RESTful>=0.3.7
+# Flask-Migrate
+# flask-cors
+requests
+PyJWT
+yahoofinancials
+yfinance==0.1.62
+yahoo-fin==0.8.9.1
+yahooquery
+pandas
+mysql-connector-python
+sqlalchemy
+pymysql
+# pylint-flask-sqlalchemy
+mariadb
+# websockets
+# flask-socketio==4.3.2
+# python-socketio==4.5.1
+fastapi
+hypercorn
+uvicorn[standard]
+inotify
+eventlet

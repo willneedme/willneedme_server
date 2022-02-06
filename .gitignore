@@ -1,0 +1,8 @@
+*.env
+/mariadb/data
+/mysql/data
+/mysql
+/*.py
+/node/serviceAccountKey.json
+/docker-compose-prod.yml
+/.DS_Store
