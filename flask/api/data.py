@@ -191,7 +191,6 @@ def news(symbol):
                 "title": news["title"] if news["title"] is not None else "",
             }
             result.append(obj)
-        print(result, file=sys.stderr)
         return jsonify(result)
     except Exception as e:
         print(e)
