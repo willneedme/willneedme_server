@@ -1,5 +1,6 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const { sequelize } = require("../mariadb/database");
+const UserArticle = require("./UserArticle");
 
 const User = sequelize.define("users", {
   uid: {
@@ -39,13 +40,10 @@ const User = sequelize.define("users", {
   },
   updatedAt: {
     type:DataTypes.DATE
-  }
+  },
 }, {
   timestamps: true,
 })
 
-// (async () => {
-//   await sequelize.sync({force : true})
-// })
 
 module.exports = User;

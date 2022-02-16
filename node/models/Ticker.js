@@ -1,10 +1,10 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const { sequelize } = require("../mariadb/database");
 
 const Ticker = sequelize.define("tickers", {
     symbol: {
         type: DataTypes.STRING,
-        primaryKey :true,
+        primaryKey: true,
     },
     country: {
         type : DataTypes.STRING
@@ -30,6 +30,9 @@ const Ticker = sequelize.define("tickers", {
     logoUrl: {
         type : DataTypes.STRING
     },
+} , {
+    timestamps: true,
 })
+
 
 module.exports = Ticker;

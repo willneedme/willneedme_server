@@ -1,7 +1,5 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const { sequelize } = require("../mariadb/database");
-const Ticker = require("./Ticker");
-const User = require("./User");
 
 const UserArticle = sequelize.define("user_articles", {
     id: {
@@ -12,9 +10,10 @@ const UserArticle = sequelize.define("user_articles", {
     uid: {
         type: DataTypes.STRING,
         references: {
-            model: User,
+            model: "users",
             key : "uid"
-        }
+        },
+        allowNull: false,
     },
     displayName: {
         type: DataTypes.STRING,
@@ -25,9 +24,10 @@ const UserArticle = sequelize.define("user_articles", {
     symbol: {
         type: DataTypes.STRING,
         references: {
-            model: Ticker,
+            model: "tickers",
             key : "symbol"
-        }
+        },
+        allowNull: false,
     },
 },{
     timestamps: true,

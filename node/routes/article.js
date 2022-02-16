@@ -1,40 +1,67 @@
 const express = require("express");
 const router = express.Router();
 const { auth } = require("../middleware/auth");
-const Ticker = require("../models/Ticker");
-const User = require("../models/User");
-const UserArticle = require("../models/UserArticle");
+const { Ticker , User , UserArticle} = require("../models/index");
+// const Ticker = require("../models/Ticker");
+// const User = require("../models/User");
+// const UserArticle = require("../models/UserArticle");
+// const Test = require("../models/Test");
+// const TestB = require("../models/TestB");
 
 router.post("/",auth, async (req, res, next) => {
     try {
         const article = await UserArticle.create(req.body);
-        const newArticle = await article.save();
-        const result = await UserArticle.findAll({
+        await article.save();
+        const articles = await UserArticle.findAll({
+            include: [
+                {
+                    model: Ticker,
+                    attributes : ["name"]
+                },
+            ],
             where: {
                 symbol : req.body.symbol
             },
             order : [['createdAt' , 'desc']]
         })
-        if (result != null) {
+        if (articles != null) {
+            let result = articles.map(item => {
+                return {
+                    ...item.dataValues,
+                    "name": item.tickers[0].dataValues.name
+                };
+            });
             return res.status(200).json(result);    
         } else {
             return res.json([]);
         }
         
     } catch (e) {
-        next(e);
+        return res.json(null);
     }
 });
 
 router.get("/:symbol", auth, async (req, res, next) => {
     try {
-        const result = await UserArticle.findAll({
+        const articles = await UserArticle.findAll({
+            include: [
+                {
+                    model: Ticker,
+                    attributes : ["name"]
+                },
+            ],
             where: {
                 symbol : req.params.symbol
             },
             order : [['createdAt' , 'desc']]
         }) 
-        if (result != null) {
+        if (articles != null) {
+            let result = articles.map(item => {
+                return {
+                    ...item.dataValues,
+                    "name": item.tickers[0].dataValues.name
+                };
+            });
             return res.status(200).json(result);    
         } else {
             return res.json([]);
@@ -44,13 +71,25 @@ router.get("/:symbol", auth, async (req, res, next) => {
     }
 });
 
-router.get("/", auth, async (req, res, next) => {
+router.get("/", async (req, res, next) => {
     try {
-        const result = await UserArticle.findAll({
-            order : [['createdAt' , 'desc']]
-        }) 
-        if (result != null) {
-            return res.status(200).json(result);    
+        const articles = await UserArticle.findAll({
+            include: [
+                {
+                    model: Ticker,
+                    attributes : ["name"]
+                },
+            ],
+            order: [['createdAt', 'desc']]
+        }); 
+        if (articles != null) {
+            let result = articles.map(item => {
+                return {
+                    ...item.dataValues,
+                    "name": item.tickers[0].dataValues.name
+                };
+            });
+            return res.status(200).json(result);
         } else {
             return res.json([]);
         }

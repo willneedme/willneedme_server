@@ -4,8 +4,7 @@ const { connection } = require('../mariadb/db');
 const {sequelize } = require("../mariadb/database");
 const { auth } = require("../middleware/auth");
 const { createFirebaseToken } = require("../utils/naver_auth");
-const User = require("../models/User");
-
+const { Ticker , User , UserArticle} = require("../models/index");
 
 router.get('/info',auth ,async (req, res, next) => {
     try {
