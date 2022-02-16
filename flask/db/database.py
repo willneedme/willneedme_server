@@ -6,7 +6,7 @@ import pymysql
 import os
 from config import config, URL
 
-engine = create_engine(URL)
+engine = create_engine(URL, pool_pre_ping=True)
 session = scoped_session(sessionmaker(
     autocommit=False, autoflush=False, bind=engine))
 Base = declarative_base()

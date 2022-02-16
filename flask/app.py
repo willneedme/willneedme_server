@@ -7,5 +7,6 @@ app = Flask(__name__)
 
 
 def create_app():
+    app.config['JSON_AS_ASCII'] = False
     app.config.from_pyfile("config.py")
     return app

@@ -24,12 +24,12 @@ from utils.date import yearMonthDay
 from middleware.auth import auth
 from operator import itemgetter
 from GoogleNews import GoogleNews
+import FinanceDataReader as fdr
+
+data = Blueprint("data", __name__)
 
 
-finance = Blueprint("finance", __name__)
-
-
-@finance.route("/chartdata", methods=["GET"])
+@data.route("/chartdata", methods=["GET"])
 @auth
 def chartData():
     cursor = connection().cursor(pymysql.cursors.DictCursor)
@@ -71,7 +71,7 @@ def chartData():
     return ('', 204)
 
 
-@finance.route("/daychart", methods=["GET"])
+@data.route("/daychart", methods=["GET"])
 @auth
 def dayChart():
     return jsonify(None)
@@ -107,7 +107,7 @@ def dayChart():
     return ('', 204)
 
 
-@finance.route("/search/<query>", methods=["GET"])
+@data.route("/search/<query>", methods=["GET"])
 @auth
 def search(query):
     try:
@@ -126,47 +126,80 @@ def search(query):
         return jsonify(None)
 
 
-@finance.route("/ticker/<symbol>", methods=["GET"])
+@data.route("/ticker/<symbol>", methods=["GET"])
 @auth
 def ticker(symbol):
     try:
-        ticker = session.query(Tickers.industry, Tickers.sector, Tickers.netChange)\
+        ticker = session.query(Tickers.name, Tickers.industry, Tickers.sector, Tickers.netChange)\
             .filter(Tickers.symbol == symbol).first()
-        company = stock_info.get_company_info(
-            symbol).reset_index().to_dict("records")
-        logoUrl = ""
-        for value in company:
-            if value["Breakdown"] == "website":
-                logo = str(value["Value"]).split(".")
-                logoUrl = "https://logo.clearbit.com/{}.{}".format(
-                    logo[len(logo) - 2], logo[len(logo) - 1])
-        info = stock_info.get_quote_data(symbol)
-        obj = {
-            "logoUrl": logoUrl,
-            "industry": ticker["industry"] if ticker is not None else "",
-            "sector": ticker["sector"] if ticker is not None else "",
-            "netChange": ticker["netChange"] if ticker is not None else 0,
-            "name": info["shortName"] if "shortName" in info and info["shortName"] is not None else "",
-            "averageVolumeThreeMonth": info["averageDailyVolume3Month"] if "averageDailyVolume3Month" in info and info["averageDailyVolume3Month"] is not None else 0,
-            "averageVolumeTenDay": info["averageDailyVolume10Day"] if "averageDailyVolume10Day" in info and info["averageDailyVolume10Day"] is not None else 0,
-            "fiftyDayAverage": info["fiftyDayAverage"] if "fiftyDayAverage" in info and info["fiftyDayAverage"] is not None else 0,
-            "fiftyTwoWeekHigh": info["fiftyTwoWeekHigh"] if "fiftyTwoWeekHigh" in info and info["fiftyTwoWeekHigh"] is not None else 0,
-            "fiftyTwoWeekLow": info["fiftyTwoWeekLow"] if "fiftyTwoWeekLow" in info and info["fiftyTwoWeekLow"] is not None else 0,
-            "marketCap": info["marketCap"] if "marketCap" in info and info["marketCap"] is not None else 0,
-            "symbol": info["symbol"] if "symbol" in info and info["symbol"] is not None else 0,
-            "trailingPE": info["trailingPE"] if "trailingPE" in info and info["trailingPE"] is not None else 0,
-            "twoHundredDayAverage": info["twoHundredDayAverage"] if "twoHundredDayAverage" in info and info["twoHundredDayAverage"] is not None else 0
-        }
-        charts = stock_info.get_data(
-            symbol, interval="1d", index_as_date=False).reset_index().to_dict("records")
+        if symbol.isnumeric() is not True:
+            company = stock_info.get_company_info(
+                symbol).reset_index().to_dict("records")
+            logoUrl = ""
+            for value in company:
+                if value["Breakdown"] == "website":
+                    logo = str(value["Value"]).split(".")
+                    logoUrl = "https://logo.clearbit.com/{}.{}".format(
+                        logo[len(logo) - 2], logo[len(logo) - 1])
+            info = stock_info.get_quote_data(symbol)
+            obj = {
+                "logoUrl": logoUrl,
+                "industry": ticker["industry"] if ticker is not None else "",
+                "sector": ticker["sector"] if ticker is not None else "",
+                "netChange": ticker["netChange"] if ticker is not None else 0,
+                "name": info["shortName"] if "shortName" in info and info["shortName"] is not None else "",
+                "averageVolumeThreeMonth": info["averageDailyVolume3Month"] if "averageDailyVolume3Month" in info and info["averageDailyVolume3Month"] is not None else 0,
+                "averageVolumeTenDay": info["averageDailyVolume10Day"] if "averageDailyVolume10Day" in info and info["averageDailyVolume10Day"] is not None else 0,
+                "fiftyDayAverage": info["fiftyDayAverage"] if "fiftyDayAverage" in info and info["fiftyDayAverage"] is not None else 0,
+                "fiftyTwoWeekHigh": info["fiftyTwoWeekHigh"] if "fiftyTwoWeekHigh" in info and info["fiftyTwoWeekHigh"] is not None else 0,
+                "fiftyTwoWeekLow": info["fiftyTwoWeekLow"] if "fiftyTwoWeekLow" in info and info["fiftyTwoWeekLow"] is not None else 0,
+                "marketCap": info["marketCap"] if "marketCap" in info and info["marketCap"] is not None else 0,
+                "symbol": info["symbol"] if "symbol" in info and info["symbol"] is not None else 0,
+                "trailingPE": info["trailingPE"] if "trailingPE" in info and info["trailingPE"] is not None else 0,
+                "twoHundredDayAverage": info["twoHundredDayAverage"] if "twoHundredDayAverage" in info and info["twoHundredDayAverage"] is not None else 0
+            }
+            charts = stock_info.get_data(
+                symbol, interval="1d", index_as_date=False).reset_index().to_dict("records")
 
-        for row in charts:
-            row["date"] = row["date"].isoformat()
-        result = [row for row in charts if math.isnan(row['open']) is False]
-        # sortedChart = sorted(charts, key=(lambda x: x['date']), reverse=True)
-        obj["charts"] = result
+            for row in charts:
+                row["date"] = row["date"].isoformat()
+            result = [row for row in charts if math.isnan(
+                row['open']) is False]
+            # sortedChart = sorted(charts, key=(lambda x: x['date']), reverse=True)
+            obj["charts"] = result
+            return jsonify(obj)
+        else:
+            # kospi kosdaq
+            frame = fdr.DataReader(symbol).reset_index().rename(columns={"Close": "close", "Date": "date",
+                                                                         "Open": "open", "High": "high", "Low": "low", "Volume": "volume"})
+            obj = {
+                "logoUrl": "",
+                "industry": ticker["industry"] if ticker is not None else "",
+                "sector": ticker["sector"] if ticker is not None else "",
+                "netChange": ticker["netChange"] if ticker is not None else 0,
+                "name": ticker["name"],
+                "averageVolumeThreeMonth": frame["volume"].iloc[len(frame)-90:len(frame)].mean(),
+                "averageVolumeTenDay": frame["volume"].iloc[len(frame)-10:len(frame)].mean(),
+                "fiftyDayAverage": frame["close"].iloc[len(frame)-50:len(frame)].mean(),
+                "fiftyTwoWeekHigh": float(frame["high"].iloc[len(frame)-240:len(frame)
+                                                             ].max(axis=0)),
+                "fiftyTwoWeekLow": float(frame["low"].iloc[len(frame)-240:len(frame)
+                                                           ].min(axis=0)),
+                "marketCap": 0,
+                "symbol": str(symbol),
+                "trailingPE": 0,
+                "twoHundredDayAverage": frame["close"].iloc[len(frame)-200:len(frame)].mean()
+            }
+            charts = frame.drop(
+                ["Change"], axis="columns").to_dict("records")
+            for row in charts:
+                row["date"] = row["date"].isoformat()
+            result = [row for row in charts if math.isnan(
+                row['open']) is False]
+            # sortedChart = sorted(charts, key=(lambda x: x['date']), reverse=True)
+            obj["charts"] = result
+            return jsonify(obj)
 
-        return jsonify(obj)
     except Exception as e:
         print(e, file=sys.stderr)
         session.rollback()
@@ -174,11 +207,16 @@ def ticker(symbol):
         return jsonify(None)
 
 
-@finance.route("/news/<symbol>", methods=["GET"])
+@data.route("/news/<symbol>", methods=["GET"])
 @auth
 def news(symbol):
     try:
-        googlenews = GoogleNews(lang='en', region="US",
+        lang = 'en'
+        region = "US"
+        if symbol.isnumeric():
+            lang = "ko"
+            region = "KO"
+        googlenews = GoogleNews(lang=lang, region=region,
                                 period="1d", encode="utf-8")
         googlenews.get_news(symbol)
         data = googlenews.result()
@@ -192,5 +230,14 @@ def news(symbol):
             }
             result.append(obj)
         return jsonify(result)
+    except Exception as e:
+        print(e)
+
+
+@data.route("/test", methods=["GET"])
+def test():
+    try:
+        row = Nasdaq.allSymbol()
+        return jsonify(row)
     except Exception as e:
         print(e)

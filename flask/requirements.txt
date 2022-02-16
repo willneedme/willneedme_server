@@ -16,3 +16,4 @@ pylint-flask-sqlalchemy
 Flask-Migrate
 mariadb
 GoogleNews
+finance-datareader
