@@ -1,0 +1,84 @@
+:root {
+    --main-color : #263343
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--main-color);
+    padding: 12px 12px;
+    border-bottom: 1px solid white;
+}
+
+
+.navbar_title a {
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-size: 30px;
+}
+
+.navbar_link img {
+    width: 40px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.navbar_menu_mobile {
+    width: 100%;
+    background-color: var(--main-color);
+    display: none;
+    flex-direction: column;
+    list-style: none;
+    padding-left: 0;
+    align-items: center;
+    width: 100vw;
+    justify-content: space-evenly;
+    margin: auto;
+}
+
+.navbar_menu_mobile li {
+    text-align: center;
+}
+
+.navbar_hidden {
+    display: none;
+}
+.login {
+    border: 2px solid burlywood;
+    background-color: burlywood;
+    border-radius: 5px;
+    align-items: center;
+    color: black;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 3px 10px 3px 10px;
+    cursor: pointer;
+}
+
+.navbar_menu {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    padding-left: 0;
+    align-items: center;
+    justify-content: space-evenly;
+    margin: auto;
+}
+
+.navbar_menu li , .navbar_menu_mobile li{
+    padding: 12px 12px;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    
+}
+
+.navbar_menu li:hover , .navbar_menu_mobile li:hover{
+    align-items: center;
+    background-color: burlywood;
+    border-radius: 10px;
+    cursor: pointer;
+}
